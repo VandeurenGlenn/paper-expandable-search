@@ -19,37 +19,51 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <link rel="import" href="../paper-search-bar.html">
   </head>
   <style media="screen">
-    paper-search.opened > paper-search-bar {
-      background: #eee;
-    }
     .header {
       width: 100%;
       height: 192px;
       background: #888;
     }
-    .header paper-search.opened {
+    .toolbar {
+      display: flex;
+      flex-direction: row;
       width: 100%;
+    }
+    .toolbar .flex {
+      width: 100%;
+    }
+  </style>
+  <style is="custom-style">
+
+    #bigSearch {
+      --paper-search-opened-width: 100%;
+    }
+    :root {
+      --paper-search-opened-background: #eee;
     }
   </style>
   <body unresolved>
 
     <p>An example of <code>&lt;paper-search&gt;</code>:</p>
 
-    <paper-search>
+    <paper-search id="bigSearch">
       <paper-icon-button icon="ps-icons:search" open-paper-search></paper-icon-button>
       <paper-search-bar></paper-search-bar>
     </paper-search>
 
     <div class="header">
-      <paper-search>
-        <paper-icon-button icon="ps-icons:search" open-paper-search></paper-icon-button>
-        <paper-search-bar></paper-search-bar>
-      </paper-search>
+      <div class="toolbar">
+        <span class="flex"></span>
+        <paper-search>
+          <paper-icon-button icon="ps-icons:search" open-paper-search></paper-icon-button>
+          <paper-search-bar></paper-search-bar>
+        </paper-search>
+      </div>
     </div>
 
     <paper-search custom-close>
       <paper-icon-button icon="ps-icons:search" open-paper-search></paper-icon-button>
-      <paper-search-bar>
+      <paper-search-bar custom-cancel>
         <paper-icon-button icon="ps-icons:close" close-paper-search></paper-icon-button>
       </paper-search-bar>
     </paper-search>

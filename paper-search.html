@@ -26,45 +26,63 @@ Example:
     <style>
       :host {
         box-sizing: border-box;
+        display: inline-block;
+        padding: 16px;
+        width: var(--paper-search-width);
+        background: var(--paper-search-background);
+        /*@apply(--layout-horizontal);
+        @apply(--layout-center);*/
+        @apply(--paper-search);
+      }
+      .content-wrapper {
+        width: var(--paper-search-width);
         @apply(--layout-horizontal);
         @apply(--layout-center);
       }
       :host(.opened) {
-        display: inline-flex;
+        background: var(--paper-search-opened-background);
+        width: var(--paper-search-opened-width);
       }
-      :host[custom-close] paper-icon-button {
-        display: none;
+      :host(.opened) .content-wrapper {
+        width: var(--paper-search-opened-width);
       }
       :host:not(.opened) paper-icon-button,
-      :host(.opened) ::content > paper-icon-button[icon="ps-icons:search"] {
+      :host[custom-close] paper-icon-button,
+      :host[custom-cancel] paper-icon-button {
         display: none;
       }
-      :host:not(.opened) ::content > paper-search-bar ::content > iron-icon {
-        opacity: 0;
-        visibility: hidden;
-        will-transform: opacity visibility width;
+      :host .content-wrapper ::content > paper-search-bar ::content > iron-icon {
+        display: none;
       }
-      :host:not(.opened) ::content > paper-search-bar,
-      :host:not(.opened) ::content > paper-search-bar ::content > .input-wrapper {
-        visibility: hidden;
+      :host:not(.opened) .content-wrapper ::content > paper-search-bar,
+      :host:not(.opened) .content-wrapper ::content > paper-search-bar ::content > .input-wrapper {
+        display: none;
         opacity: 0;
         will-transform: opacity visibility width;
         width: 0;
       }
 
-      :host(.opened) ::content > paper-search-bar,
-      :host(.opened) ::content > paper-search-bar ::content > .input-wrapper {
+      :host(.opened) .content-wrapper ::content > paper-search-bar,
+      :host(.opened) .content-wrapper ::content > paper-search-bar ::content > .input-wrapper {
         opacity: 0.88;
-        visibility: visible;
+        display: flex;
         width: 100%;
         transition: width 0.2s ease-in, opacity 0.4s cubic-bezier(0, 0.25, 0.5, 0.75);
         /*transform: scaleX(100%);*/
       }
-      :host(.opened) ::content > paper-search-bar ::content > iron-icon,
       :host(.opened) paper-icon-button {
         opacity: 0.54;
         visibility: visible;
-        transition: opacity 0.4s cubic-bezier(0, 0.25, 0.5, 0.75);
+        padding: 4px;
+        transition: opacity 0.2s cubic-bezier(0, 0.25, 0.5, 0.75), padding 0.4s ease-in;
+      }
+      :host(.opened) .content-wrapper ::content > paper-icon-button[icon="ps-icons:search"] {
+        opacity: 0.54;
+        margin-right: 8px;
+        pointer-events: none;
+        padding: 4px;
+        cursor: default;
+        transition: opacity 0.2s cubic-bezier(0, 0.25, 0.5, 0.75), padding 0.2s ease-in;
       }
       /*:host(.opened) ::content > paper-search-bar {
         opacity: 1;
@@ -73,8 +91,10 @@ Example:
         transition: width 0.2s ease-in;
       }*/
     </style>
-    <content></content>
-    <paper-icon-button icon="ps-icons:close" on-tap="cancel"></paper-icon-button>
+    <div class="content-wrapper">
+      <content id="content"></content>
+      <paper-icon-button icon="ps-icons:close" on-tap="cancel"></paper-icon-button>
+    </div>
   </template>
 </dom-module>
 
@@ -106,7 +126,7 @@ Example:
        customCancel: {
          type: Boolean,
          observer: '_customCancelChanged',
-         value: false
+         value: true
        },
 
        /**
@@ -125,6 +145,14 @@ Example:
          value: 'close-paper-search'
        },
 
+       /**
+        * The attribute for setting on a child to cancel the input
+        */
+       CancelAttribute: {
+         type: String,
+         value: 'cancel-paper-search'
+       },
+
         opened: {
           type: Boolean,
           value: false,
@@ -136,8 +164,18 @@ Example:
       tap: '_tapHandler'
     },
 
-    _customCancelChanged: function(change) {
-      this.querySelector('paper-search-bar').setAttribute('custom-cancel', change);
+    _customCancelChanged: function(cancel) {
+      var distributedNodes = Polymer.dom(this.$.content).getDistributedNodes();
+      distributedNodes.forEach(function(node) {
+        if (node.localName === 'paper-search-bar') {
+          this._searchBar = node;
+          node.setAttribute('custom-cancel', cancel);
+        }
+        if (node.localName === 'paper-icon-button' && node.hasAttribute('open-paper-search')) {
+          this._openBtn = node;
+        }
+      }.bind(this));
+      // this.parent.querySelector('paper-search-bar').setAttribute('custom-cancel', cancel);
     },
 
     _tapHandler: function() {
@@ -162,16 +200,17 @@ Example:
 
     open: function() {
       this.classList.add('opened');
+      this._openBtn.setAttribute('disabled', '');
     },
 
     close: function() {
       this.classList.remove('opened');
+      this._openBtn.removeAttribute('disabled', '');
     },
 
     cancel: function() {
-      var searchBar = this.querySelector('paper-search-bar');
-      if (searchBar.value) {
-        searchBar.value = null;
+      if (this._searchBar.value) {
+        this._searchBar.value = null;
       } else {
         this.close();
       }

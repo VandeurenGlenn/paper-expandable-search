@@ -1,0 +1,183 @@
+<!--
+@license
+Copyright (c) 2015 Glenn Vandeuren. All rights reserved.
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<!--
+An search bar a la material design.
+
+Example:
+
+    <paper-search>
+      <paper-icon-button icon="ps-icons:search" open-paper-search></paper-icon-button>
+      <paper-search-bar value="{{searchValue}}"></paper-search-bar>
+    </paper-search>
+
+@group App Elements
+@element paper-search
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="paper-search">
+
+  <template>
+    <style>
+      :host {
+        box-sizing: border-box;
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+      }
+      :host(.opened) {
+        display: inline-flex;
+      }
+      :host[custom-close] paper-icon-button {
+        display: none;
+      }
+      :host:not(.opened) paper-icon-button,
+      :host(.opened) ::content > paper-icon-button[icon="ps-icons:search"] {
+        display: none;
+      }
+      :host:not(.opened) ::content > paper-search-bar ::content > iron-icon {
+        opacity: 0;
+        visibility: hidden;
+        will-transform: opacity visibility width;
+      }
+      :host:not(.opened) ::content > paper-search-bar,
+      :host:not(.opened) ::content > paper-search-bar ::content > .input-wrapper {
+        visibility: hidden;
+        opacity: 0;
+        will-transform: opacity visibility width;
+        width: 0;
+      }
+
+      :host(.opened) ::content > paper-search-bar,
+      :host(.opened) ::content > paper-search-bar ::content > .input-wrapper {
+        opacity: 0.88;
+        visibility: visible;
+        width: 100%;
+        transition: width 0.2s ease-in, opacity 0.4s cubic-bezier(0, 0.25, 0.5, 0.75);
+        /*transform: scaleX(100%);*/
+      }
+      :host(.opened) ::content > paper-search-bar ::content > iron-icon,
+      :host(.opened) paper-icon-button {
+        opacity: 0.54;
+        visibility: visible;
+        transition: opacity 0.4s cubic-bezier(0, 0.25, 0.5, 0.75);
+      }
+      /*:host(.opened) ::content > paper-search-bar {
+        opacity: 1;
+        visibility: visible;
+        width: 100%;
+        transition: width 0.2s ease-in;
+      }*/
+    </style>
+    <content></content>
+    <paper-icon-button icon="ps-icons:close" on-tap="cancel"></paper-icon-button>
+  </template>
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'paper-search',
+
+    properties: {
+      /**
+       * The search value
+       */
+       value: {
+         type: String,
+         notify: true
+       },
+
+       /**
+        * Set to true for adding a close button yourself
+        */
+       customClose: {
+         type: Boolean
+       },
+
+       /**
+        * Set to true for adding a cancel button and method yourself
+        */
+       customCancel: {
+         type: Boolean,
+         observer: '_customCancelChanged',
+         value: false
+       },
+
+       /**
+        *The attribute for setting on a child for opening the search bar
+        */
+       openAttribute: {
+         type: String,
+         value: 'open-paper-search'
+       },
+
+       /**
+        *The attribute for setting on a child for closing the search bar
+        */
+       closeAttribute: {
+         type: String,
+         value: 'close-paper-search'
+       },
+
+        opened: {
+          type: Boolean,
+          value: false,
+          observer: '_openedChanged'
+        }
+     },
+
+    listeners: {
+      tap: '_tapHandler'
+    },
+
+    _customCancelChanged: function(change) {
+      this.querySelector('paper-search-bar').setAttribute('custom-cancel', change);
+    },
+
+    _tapHandler: function() {
+      var target = Polymer.dom(event).localTarget;
+      var searchBar = this.querySelector('paper-search-bar');
+      if (target.hasAttribute(this.openAttribute)) {
+        this.open();
+      } else if (this.customClose && target.hasAttribute(this.closeAttribute)) {
+        this.close();
+      } else if (this.customCancel && target.hasAttribute(this.cancelAttribute)) {
+        this.cancel();
+      }
+    },
+
+    _openedChanged: function(open) {
+      if (open === true) {
+        this.open();
+      } else {
+        this.close();
+      }
+    },
+
+    open: function() {
+      this.classList.add('opened');
+    },
+
+    close: function() {
+      this.classList.remove('opened');
+    },
+
+    cancel: function() {
+      var searchBar = this.querySelector('paper-search-bar');
+      if (searchBar.value) {
+        searchBar.value = null;
+      } else {
+        this.close();
+      }
+    }
+
+
+  });
+
+</script>

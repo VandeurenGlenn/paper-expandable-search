@@ -105,19 +105,12 @@ Example:
     is: 'paper-search',
 
     properties: {
-      /**
-       * The search value
-       */
-       value: {
-         type: String,
-         notify: true
-       },
-
        /**
         * Set to true for adding a close button yourself
         */
        customClose: {
-         type: Boolean
+         type: Boolean,
+         value: false
        },
 
        /**
@@ -189,15 +182,7 @@ Example:
         this.cancel();
       }
     },
-
-    _openedChanged: function(open) {
-      if (open === true) {
-        this.open();
-      } else {
-        this.close();
-      }
-    },
-
+    
     open: function() {
       this.classList.add('opened');
       this._openBtn.setAttribute('disabled', '');

@@ -1,4 +1,4 @@
-# paper-search
+# paper-expandable-search
 
 An element providing a starting point for the own reusable Polymer elements.
 

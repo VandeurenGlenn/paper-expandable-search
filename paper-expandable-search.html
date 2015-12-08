@@ -10,24 +10,23 @@ An search bar a la material design.
 
 Example:
 
-    <paper-search>
+    <paper-expandable-search>
       <paper-icon-button icon="ps-icons:search" open-paper-search></paper-icon-button>
       <paper-search-bar value="{{searchValue}}"></paper-search-bar>
-    </paper-search>
+    </paper-expandable-search>
 
 @group App Elements
-@element paper-search
+@element paper-expandable-search
 @demo demo/index.html
 @hero hero.svg
 -->
-<dom-module id="paper-search">
+<dom-module id="paper-expandable-search">
 
   <template>
     <style>
       :host {
         box-sizing: border-box;
         display: inline-block;
-        padding: 16px;
         width: var(--paper-search-width);
         background: var(--paper-search-background);
         /*@apply(--layout-horizontal);
@@ -35,6 +34,8 @@ Example:
         @apply(--paper-search);
       }
       .content-wrapper {
+        padding: 16px;
+        box-sizing: border-box;
         width: var(--paper-search-width);
         @apply(--layout-horizontal);
         @apply(--layout-center);
@@ -42,6 +43,7 @@ Example:
       :host(.opened) {
         background: var(--paper-search-opened-background);
         width: var(--paper-search-opened-width);
+
       }
       :host(.opened) .content-wrapper {
         width: var(--paper-search-opened-width);
@@ -84,6 +86,23 @@ Example:
         cursor: default;
         transition: opacity 0.2s cubic-bezier(0, 0.25, 0.5, 0.75), padding 0.2s ease-in;
       }
+      #dropShadow {
+
+        height: 3px;
+        box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
+        /*position: absolute;*/
+        /*top: 0;
+        left: 0;
+        right: 0;*/
+        height: 3px;
+        pointer-events: none;
+        -webkit-transition: opacity 0.5s;
+        transition: opacity 0.5s;
+        opacity: 0;
+      }
+      :host(.opened) #dropShadow {
+        opacity: 1;
+      }
       /*:host(.opened) ::content > paper-search-bar {
         opacity: 1;
         visibility: visible;
@@ -95,6 +114,7 @@ Example:
       <content id="content"></content>
       <paper-icon-button icon="ps-icons:close" on-tap="cancel"></paper-icon-button>
     </div>
+    <div id="dropShadow"></div>
   </template>
 </dom-module>
 
@@ -102,7 +122,7 @@ Example:
 
   Polymer({
 
-    is: 'paper-search',
+    is: 'paper-expandable-search',
 
     properties: {
        /**
@@ -182,7 +202,7 @@ Example:
         this.cancel();
       }
     },
-    
+
     open: function() {
       this.classList.add('opened');
       this._openBtn.setAttribute('disabled', '');

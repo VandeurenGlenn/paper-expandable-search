@@ -1,5 +1,5 @@
 {
-  "name": "paper-search",
+  "name": "paper-expandable-search",
   "version": "0.1.0-b.2",
   "authors": [
     "Glenn Vandeuren <VandeurenGlenn@gmail.com>"
@@ -11,9 +11,9 @@
     "polymer",
     "seed"
   ],
-  "main": "paper-search.html",
+  "main": "paper-expandable-search.html",
   "license": "http://vandeurenglenn.github.io/LICENSE.txt",
-  "homepage": "https://github.com/vandeurenglenn/paper-search/",
+  "homepage": "https://github.com/vandeurenglenn/paper-expandable-search/",
   "ignore": [
     "/.*",
     "/test/"

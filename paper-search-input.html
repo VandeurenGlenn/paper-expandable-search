@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-input/iron-input.html">
 
 <dom-module id="paper-search-input">
   <template>
@@ -22,7 +23,7 @@
         display: none;
       }
     </style>
-    <input type="search" value="{{value::input}}" placeholder="[[placeholder]]">
+    <input id="search" is="iron-input" type="search" value="{{value::input}}" placeholder="[[placeholder]]" autocomplete="[[_computeAutocomplete(value)]]">
   </template>
   <script>
     Polymer({
@@ -36,6 +37,13 @@
            type: String,
            notify: true
          }
+      },
+
+      _computeAutocomplete: function(v) {
+        if (v) {
+          return 'on';
+        }
+        return 'off';
       }
     });
   </script>

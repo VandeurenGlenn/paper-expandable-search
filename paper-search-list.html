@@ -106,7 +106,6 @@
               return false;
             }
             /*jslint bitwise: true */
-            console.log('1');
             return item && ~item.toLowerCase().indexOf(searchValue.toLowerCase());
           };
         }
@@ -130,7 +129,7 @@
           },10);
         } else if (!searchValue) {
           for (var i = 0; i < this._children.length; i++) {
-            if (this._children[0].localName === 'paper-item') {              
+            if (this._children[0].localName === 'paper-item') {
               this._children[i].classList.remove('transition');
               this._children[i].classList.remove('icon-hidden');
             }

@@ -87,7 +87,6 @@ Example:
         transition: opacity 0.2s cubic-bezier(0, 0.25, 0.5, 0.75), padding 0.2s ease-in;
       }
       #dropShadow {
-
         height: 3px;
         box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
         /*position: absolute;*/
@@ -103,6 +102,9 @@ Example:
       :host(.opened) #dropShadow {
         opacity: 1;
       }
+      :host:not(.opened) .content-wrapper ::content > [close-paper-search] {
+        display: none;
+      }
       /*:host(.opened) ::content > paper-search-bar {
         opacity: 1;
         visibility: visible;
@@ -111,10 +113,27 @@ Example:
       }*/
     </style>
     <div class="content-wrapper">
-      <content id="content"></content>
-      <paper-icon-button icon="ps-icons:close" on-tap="cancel"></paper-icon-button>
+      <content id="openBtn" select="[open-paper-search]"></content>
+      <paper-search-bar value="{{value}}" history="[[history]]" autocomplete="{{autocomplete}}" custom-cancel="[[customCancel]]"></paper-search-bar>
+      <template is="dom-if" if="[[customClose]]">
+        <content select="[close-paper-search]"></content>
+      </template>
+      <template is="dom-if" if="[[!customClose]]">
+        <paper-icon-button icon="ps-icons:close" on-tap="cancel"></paper-icon-button>
+      </template>
     </div>
     <div id="dropShadow"></div>
+
+    <paper-search-list history="{{history}}" search-value="[[value]]" autocomplete$="[[autocomplete]]" on-iron-select="_onListItemSelected" autocomplete-fallback></paper-search-list>
+
+    <iron-a11y-keys id="a11y" target="[[target]]" keys="enter" on-keys-pressed="onEnter"></iron-a11y-keys>
+    <iframe id="remember" name="remember" hidden src="about:blank"></iframe>
+    <form target="remember" method="post" action="about:blank" hidden>
+      <fieldset>
+        <input id="search" value="[[value]]">
+      </fieldset>
+      <button type="submit" hidden></button>
+    </form>
   </template>
 </dom-module>
 
@@ -125,6 +144,14 @@ Example:
     is: 'paper-expandable-search',
 
     properties: {
+      /**
+       * The search value
+       */
+       value: {
+         type: String,
+         notify: true
+       },
+
        /**
         * Set to true for adding a close button yourself
         */
@@ -138,7 +165,6 @@ Example:
         */
        customCancel: {
          type: Boolean,
-         observer: '_customCancelChanged',
          value: true
        },
 
@@ -164,6 +190,17 @@ Example:
        CancelAttribute: {
          type: String,
          value: 'cancel-paper-search'
+       },
+
+       target: {
+         type: Object,
+         value: function() {
+           return this;
+         }
+       },
+
+       history: {
+         type: Array
        }
      },
 
@@ -171,23 +208,25 @@ Example:
       tap: '_tapHandler'
     },
 
-    _customCancelChanged: function(cancel) {
-      var distributedNodes = Polymer.dom(this.$.content).getDistributedNodes();
+    attached: function() {
+      this._searchList = Polymer.dom(this.root).querySelector('paper-search-list');
+      this._searchBar = Polymer.dom(this.root).querySelector('paper-search-bar');
+      var distributedNodes = Polymer.dom(this.$.openBtn).getDistributedNodes();
       distributedNodes.forEach(function(node) {
-        if (node.localName === 'paper-search-bar') {
-          this._searchBar = node;
-          node.setAttribute('custom-cancel', cancel);
-        }
-        if (node.localName === 'paper-icon-button' && node.hasAttribute('open-paper-search')) {
+        if (node.hasAttribute('open-paper-search')) {
           this._openBtn = node;
         }
       }.bind(this));
-      // this.parent.querySelector('paper-search-bar').setAttribute('custom-cancel', cancel);
+    },
+
+    _updateHistory: function(e) {
+      console.log(e);
+      this.history = e.detail.history;
+      this.autocomplete = e.detail.autocomplete;
     },
 
     _tapHandler: function() {
       var target = Polymer.dom(event).localTarget;
-      var searchBar = this.querySelector('paper-search-bar');
       if (target.hasAttribute(this.openAttribute)) {
         this.open();
       } else if (this.customClose && target.hasAttribute(this.closeAttribute)) {
@@ -197,14 +236,24 @@ Example:
       }
     },
 
+    _onListItemSelected: function(e) {
+      this.value = e.detail.item.name;
+    },
+
     open: function() {
       this.classList.add('opened');
-      this._openBtn.setAttribute('disabled', '');
+      this._searchList.open();
+      if (this._openBtn) {
+        this._openBtn.setAttribute('disabled', '');
+      }
     },
 
     close: function() {
       this.classList.remove('opened');
-      this._openBtn.removeAttribute('disabled', '');
+      this._searchList.close();
+      if (this._openBtn) {
+        this._openBtn.removeAttribute('disabled', '');
+      }
     },
 
     cancel: function() {
@@ -213,6 +262,57 @@ Example:
       } else {
         this.close();
       }
+    },
+
+    onEnter: function() {
+      this.querySelector('button').click();
+      this.addToHistory(this.value);
+    },
+
+    addToHistory:function(value) {
+      this.exists(this.history, value).then(function(exists) {
+        if (!exists) {
+          this.push('history', value);
+        }
+      }.bind(this));
+    },
+
+    exists: function(prop, val) {
+      return new Promise(function(resolve, reject) {
+        if (!prop) {
+          reject('no data set');
+        }
+        if (!val) {
+          reject('value undefined');
+        }
+        this.checkType(prop, Array).then(function(isArray) {
+          if (isArray) {
+            [prop].forEach(function(value) {
+              if (value === val) {
+                resolve(true);
+              }
+            }.bind(this));
+            resolve(false);
+          }
+        });
+      }.bind(this));
+
+    },
+
+    checkType: function(prop, type) {
+      return new Promise(function(resolve, reject) {
+        if (!prop) {
+          reject('no data set');
+        }
+        if (!type) {
+          reject('no type defined');
+        }
+        if (prop.constructor === type) {
+          resolve(true);
+        }
+        resolve(false);
+      }.bind(this));
+
     }
 
 

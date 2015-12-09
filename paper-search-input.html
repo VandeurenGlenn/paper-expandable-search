@@ -22,8 +22,11 @@
       input[type="search"]::-webkit-appearance {
         display: none;
       }
+      input:-webkit-autofill {
+        -webkit-box-shadow: 0 0 0px 1000px var(--paper-search-background, #eee) inset;
+      }
     </style>
-    <input id="search" is="iron-input" type="search" value="{{value::input}}" placeholder="[[placeholder]]" autocomplete="[[_computeAutocomplete(value)]]">
+    <input id="search" is="iron-input" type="search" value="{{value::input}}" placeholder="[[placeholder]]" autocomplete="[[_computeAutocomplete(value, customAutocomplete)]]">
   </template>
   <script>
     Polymer({
@@ -36,12 +39,28 @@
          value: {
            type: String,
            notify: true
+         },
+
+         autocomplete: {
+           type: Boolean,
+           notify: true
+         },
+         /** set to true for adding your own method */
+         customAutocomplete: {
+           type: Boolean,
+           value: false
          }
       },
 
-      _computeAutocomplete: function(v) {
+      _computeAutocomplete: function(v, customAutocomplete) {
         if (v) {
-          return 'on';
+          this.autocomplete = true;
+          if (!customAutocomplete) {
+            return 'on';
+          }
+        }
+        if (!customAutocomplete) {
+          this.autocomplete = false;          
         }
         return 'off';
       }

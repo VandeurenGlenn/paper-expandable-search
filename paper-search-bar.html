@@ -2,6 +2,7 @@
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="paper-search-icons.html">
 <link rel="import" href="paper-search-input.html">
+<link rel="import" href="paper-search-list.html">
 <link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
 
 <!--
@@ -24,9 +25,10 @@ Example:
       width: 100%;
       box-sizing: border-box;
       background: var(--paper-search-bar-background);
+      @apply(--layout-vertical);
       @apply(--paper-search-bar);
     }
-    :host, .input-wrapper {
+    .input-wrapper {
       @apply(--layout-horizontal);
       @apply(--layout-center);
     }
@@ -39,7 +41,7 @@ Example:
     </style>
     <iron-icon icon="ps-icons:search"></iron-icon>
     <div class="input-wrapper">
-      <paper-search-input value="{{value}}" placeholder="[[placeholder]]"></paper-search-input>
+      <paper-search-input value="{{value}}" placeholder="[[placeholder]]" autocomplete="{{autocomplete}}" custom-autocomplete></paper-search-input>
       <span class="flex"></span>
       <template is="dom-if" if="[[!_computeCustomCancel(customCancel)]]">
         <paper-icon-button icon="ps-icons:close" on-tap="cancel"></paper-icon-button>
@@ -48,15 +50,6 @@ Example:
         <content></content>
       </template>
     </div>
-
-    <iron-a11y-keys id="a11y" target="[[target]]" keys="enter" on-keys-pressed="onEnter"></iron-a11y-keys>
-    <iframe id="remember" name="remember" hidden src="about:blank"></iframe>
-    <form target="remember" method="post" action="about:blank" hidden>
-      <fieldset>
-        <input id="search" value="[[value]]">
-      </fieldset>
-      <button type="submit" hidden></button>
-    </form>
   </template>
   <script>
     Polymer({
@@ -85,11 +78,9 @@ Example:
           value: false
         },
 
-        target: {
-          type: Object,
-          value: function() {
-            return this;
-          }
+        autocomplete: {
+          type: Boolean,
+          notify: true
         }
       },
 
@@ -102,10 +93,6 @@ Example:
           return true;
         }
         return false;
-      },
-
-      onEnter: function() {
-        this.querySelector('button').click();
       }
 
     });

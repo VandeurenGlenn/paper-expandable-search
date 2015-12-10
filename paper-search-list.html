@@ -143,10 +143,10 @@
           for (var i = 0; i < this._children.length; i++) {
             if (this._children[0].localName === 'paper-item') {
               this._children[i].classList.remove('transition');
+              this.autocomplete = false;
+              this.open();
             }
           }
-          this.autocomplete = false;
-          this.open();
         }
       },
 

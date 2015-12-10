@@ -9,6 +9,7 @@
     <style>
       :host {
         display: block;
+        position: fixed;
       }
       :host:not([opened]) {
         display: none;
@@ -59,6 +60,12 @@
           value: false
         },
 
+        /** The positon for the menu to show */
+        verticalAlign: {
+          type: String,
+          value: 'bottom'
+        },
+
         searchValue: {
           type: String,
           observer: '_searchValueChanged'
@@ -88,6 +95,12 @@
       },
 
       open: function() {
+        this.style.width = this.dataHost.getBoundingClientRect().width + 'px';
+        if (this.verticalAlign === 'top') {
+          this.style.bottom = this.dataHost.getBoundingClientRect().top + 'px';
+        } else if (this.verticalAlign === 'bottom') {
+          this.style.top = this.dataHost.getBoundingClientRect().bottom + 'px';
+        }
         this.opened = true;
       },
 
@@ -119,7 +132,6 @@
             for (var i = 0; i < this._children.length; i++) {
               if (this._children[0].localName === 'paper-item') {
                 this._children[i].classList.add('transition');
-                this._children[i].classList.add('icon-hidden');
                 this.open();
                 this.autocomplete = true;
               } else {
@@ -131,7 +143,6 @@
           for (var i = 0; i < this._children.length; i++) {
             if (this._children[0].localName === 'paper-item') {
               this._children[i].classList.remove('transition');
-              this._children[i].classList.remove('icon-hidden');
             }
           }
           this.autocomplete = false;

@@ -124,7 +124,7 @@ Example:
     </div>
     <div id="dropShadow"></div>
 
-    <paper-search-list history="{{history}}" search-value="[[value]]" autocomplete$="[[autocomplete]]" on-iron-select="_onListItemSelected" autocomplete-fallback></paper-search-list>
+    <paper-search-list history="{{history}}" search-value="[[value]]" autocomplete$="[[autocomplete]]" vertical-align="[[verticalAlign]]" on-iron-select="_onListItemSelected" autocomplete-fallback></paper-search-list>
 
     <iron-a11y-keys id="a11y" target="[[target]]" keys="enter" on-keys-pressed="onEnter"></iron-a11y-keys>
     <iframe id="remember" name="remember" hidden src="about:blank"></iframe>
@@ -150,6 +150,12 @@ Example:
        value: {
          type: String,
          notify: true
+       },
+
+       /** The positon for the menu to show */
+       verticalAlign: {
+         type: String,
+         value: 'bottom'
        },
 
        /**
@@ -312,10 +318,7 @@ Example:
         }
         resolve(false);
       }.bind(this));
-
     }
-
-
   });
 
 </script>

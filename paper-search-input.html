@@ -58,9 +58,9 @@
           if (!customAutocomplete) {
             return 'on';
           }
-        }
-        if (!customAutocomplete) {
-          this.autocomplete = false;          
+        } else if (!v || !customAutocomplete) {
+          this.autocomplete = false;
+          return 'off';
         }
         return 'off';
       }

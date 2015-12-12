@@ -1,0 +1,158 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-item/paper-item.html">
+
+<dom-module id="paper-search-list">
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: fixed;
+      }
+      :host:not([opened]) {
+        display: none;
+      }
+      :host([autocompleteFallback]) {
+        display: block !important;
+      }
+      :host([autocomplete)] paper-item {
+        opacity: 0;
+      }
+      :host([autocomplete)] paper-item.transition {
+        opacity: 1;
+        margin-left: 58px;
+        transition: opacity ease-in 0.4ms;
+      }
+      paper-item > iron-icon {
+        margin-right: 32px;
+      }
+    </style>
+    <!-- TODO: find a way to bind the autocomplete values -->
+    <!-- If not able to bind check the history for autocomplete items -->
+    <paper-material elevation="1">
+      <paper-menu>
+        <template is="dom-repeat" items="[[_computeView(history, autocomplete)]]" filter="[[filter(searchValue, autocomplete, autocompleteFallback)]]">
+          <paper-item name="[[item]]"><iron-icon icon="ps-icons:history" hidden$="[[autocomplete]]"></iron-icon>[[item]]</paper-item>
+        </template>
+      </paper-menu>
+    </paper-material>
+
+    <iron-localstorage name="paper-expandable-search-history" value="{{history}}" on-iron-localstorage-load-empty="_initLocalHistory"></iron-localstorage>
+  </template>
+  <script>
+    Polymer({
+      is: 'paper-search-list',
+
+      properties: {
+
+        /** when true, hides the history items. */
+        autocomplete: {
+          type: Boolean,
+          value: false
+        },
+
+        /** Set to true for showing an autocomplete list when no autocomplete supported */
+        autocompleteFallback: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false
+        },
+
+        /** The positon for the menu to show */
+        verticalAlign: {
+          type: String,
+          value: 'bottom'
+        },
+
+        searchValue: {
+          type: String,
+          observer: '_searchValueChanged'
+        },
+
+        /** Array containing the history items */
+        history: {
+          type: Array,
+          notify: true
+        },
+
+        opened: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true
+        }
+      },
+
+      _computeView: function(history, autocomplete) {
+        if (history && !autocomplete) {
+          return history;
+        } else if (history && autocomplete && this.autocompleteFallback) {
+          return history;
+        } else if (history && autocomplete && !this.autocompleteFallback) {
+          return [];
+        }
+      },
+
+      open: function() {
+        this.style.width = this.dataHost.getBoundingClientRect().width + 'px';
+        if (this.verticalAlign === 'top') {
+          this.style.bottom = this.dataHost.getBoundingClientRect().top + 'px';
+        } else if (this.verticalAlign === 'bottom') {
+          this.style.top = this.dataHost.getBoundingClientRect().bottom + 'px';
+        }
+        this.opened = true;
+      },
+
+      close: function() {
+        this.opened = false;
+      },
+
+      filter: function(searchValue, autocomplete, autocompleteFallback) {
+        if (searchValue !== null) {
+          return function(item) {
+            if (!item) {
+              return false;
+            }
+
+            if (item && autocomplete && !autocompleteFallback) {
+              return false;
+            }
+            /*jslint bitwise: true */
+            return item && ~item.toLowerCase().indexOf(searchValue.toLowerCase());
+          };
+        }
+      },
+
+      _searchValueChanged: function(searchValue) {
+        var menu = Polymer.dom(this.root).querySelector('paper-menu');
+        this._children = menu.children[0].children;
+        if (searchValue) {
+          this.async(function() {
+            for (var i = 0; i < this._children.length; i++) {
+              if (this._children[0].localName === 'paper-item') {
+                this._children[i].classList.add('transition');
+                this.open();
+                this.autocomplete = true;
+              } else {
+                this.close();
+              }
+            }
+          },10);
+        } else if (!searchValue) {
+          for (var i = 0; i < this._children.length; i++) {
+            if (this._children[0].localName === 'paper-item') {
+              this._children[i].classList.remove('transition');
+              this.autocomplete = false;
+              this.open();
+            }
+          }
+        }
+      },
+
+      _initLocalHistory: function(e) {
+        this.history = [];
+      }
+    });
+  </script>
+</dom-module>

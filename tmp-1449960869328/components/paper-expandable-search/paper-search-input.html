@@ -1,0 +1,69 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-input/iron-input.html">
+
+<dom-module id="paper-search-input">
+  <template>
+    <style>
+      :host {
+        display: block;
+        width: 100%;
+        min-width: 160px;
+      }
+      input {
+        padding: 10px;
+        width: 100%;
+        /*-webkit-appearance: none;*/
+        border: none;
+        outline: none;
+        background: none;
+      }
+      input[type="search"]::-webkit-search-decoration,
+      input[type="search"]::-webkit-search-cancel-button,
+      input[type="search"]::-webkit-appearance {
+        display: none;
+      }
+      input:-webkit-autofill {
+        -webkit-box-shadow: 0 0 0px 1000px var(--paper-search-background, #eee) inset;
+      }
+    </style>
+    <input id="search" is="iron-input" type="search" value="{{value::input}}" placeholder="[[placeholder]]" autocomplete="[[_computeAutocomplete(value, customAutocomplete)]]">
+  </template>
+  <script>
+    Polymer({
+      is: 'paper-search-input',
+
+      properties: {
+        /**
+         * The search value
+         */
+         value: {
+           type: String,
+           notify: true
+         },
+
+         autocomplete: {
+           type: Boolean,
+           notify: true
+         },
+         /** set to true for adding your own method */
+         customAutocomplete: {
+           type: Boolean,
+           value: false
+         }
+      },
+
+      _computeAutocomplete: function(v, customAutocomplete) {
+        if (v) {
+          this.autocomplete = true;
+          if (!customAutocomplete) {
+            return 'on';
+          }
+        } else if (!v || !customAutocomplete) {
+          this.autocomplete = false;
+          return 'off';
+        }
+        return 'off';
+      }
+    });
+  </script>
+</dom-module>

@@ -34,11 +34,11 @@ Example:
         @apply(--paper-search);
       }
       .content-wrapper {
-        padding: 16px;
         box-sizing: border-box;
         width: var(--paper-search-width);
         @apply(--layout-horizontal);
         @apply(--layout-center);
+        @apply(--paper-expandable-search-content)
       }
       :host(.opened) {
         background: var(--paper-search-opened-background);

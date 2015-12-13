@@ -3,6 +3,7 @@
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 
 <dom-module id="paper-search-list">
   <template>
@@ -45,6 +46,10 @@
     Polymer({
       is: 'paper-search-list',
 
+      behaviors: [
+        Polymer.IronResizableBehavior
+      ],
+
       properties: {
 
         /** when true, hides the history items. */
@@ -81,6 +86,30 @@
           type: Boolean,
           value: false,
           reflectToAttribute: true
+        },
+
+        host: {
+          type: Object,
+          value: function() {
+            return this.dataHost
+          }
+        }
+      },
+
+      listeners: {
+        'iron-resize': '_onIronResize'
+      },
+
+      get boundedClient() {
+        return this.host.getBoundingClientRect();
+      },
+
+      _onIronResize: function() {
+        this.style.width = this.boundedClient.width + 'px';
+        if (this.verticalAlign === 'top') {
+          this.style.bottom = this.boundedClient.top + 'px';
+        } else if (this.verticalAlign === 'bottom') {
+          this.style.top = this.boundedClient.bottom + 'px';
         }
       },
 
@@ -95,12 +124,7 @@
       },
 
       open: function() {
-        this.style.width = this.dataHost.getBoundingClientRect().width + 'px';
-        if (this.verticalAlign === 'top') {
-          this.style.bottom = this.dataHost.getBoundingClientRect().top + 'px';
-        } else if (this.verticalAlign === 'bottom') {
-          this.style.top = this.dataHost.getBoundingClientRect().bottom + 'px';
-        }
+        this._onIronResize();
         this.opened = true;
       },
 

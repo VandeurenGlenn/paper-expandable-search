@@ -28,6 +28,7 @@ Example:
         box-sizing: border-box;
         display: inline-block;
         width: var(--paper-search-width);
+        height: 40px;
         background: var(--paper-search-background);
         /*@apply(--layout-horizontal);
         @apply(--layout-center);*/
@@ -38,12 +39,11 @@ Example:
         width: var(--paper-search-width);
         @apply(--layout-horizontal);
         @apply(--layout-center);
-        @apply(--paper-expandable-search-content)
       }
       :host(.opened) {
         background: var(--paper-search-opened-background);
         width: var(--paper-search-opened-width);
-
+        height: auto;
       }
       :host(.opened) .content-wrapper {
         width: var(--paper-search-opened-width);
@@ -89,10 +89,6 @@ Example:
       #dropShadow {
         height: 3px;
         box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
-        /*position: absolute;*/
-        /*top: 0;
-        left: 0;
-        right: 0;*/
         height: 3px;
         pointer-events: none;
         -webkit-transition: opacity 0.5s;
@@ -207,6 +203,12 @@ Example:
 
        history: {
          type: Array
+       },
+
+       opened: {
+         type: Boolean,
+         notify: true,
+         value: false
        }
      },
 
@@ -248,6 +250,7 @@ Example:
 
     open: function() {
       this.classList.add('opened');
+      this.opened = true;
       this._searchList.open();
       if (this._openBtn) {
         this._openBtn.setAttribute('disabled', '');
@@ -256,6 +259,7 @@ Example:
 
     close: function() {
       this.classList.remove('opened');
+      this.opened = false;
       this._searchList.close();
       if (this._openBtn) {
         this._openBtn.removeAttribute('disabled', '');

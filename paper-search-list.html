@@ -23,7 +23,6 @@
       }
       :host([autocomplete)] paper-item.transition {
         opacity: 1;
-        margin-left: 58px;
         transition: opacity ease-in 0.4ms;
       }
       paper-item > iron-icon {
@@ -33,9 +32,16 @@
     <!-- TODO: find a way to bind the autocomplete values -->
     <!-- If not able to bind check the history for autocomplete items -->
     <paper-material elevation="1">
-      <paper-menu>
-        <template is="dom-repeat" items="[[_computeView(history, autocomplete)]]" filter="[[filter(searchValue, autocomplete, autocompleteFallback)]]">
-          <paper-item name="[[item]]"><iron-icon icon="ps-icons:history" hidden$="[[autocomplete]]"></iron-icon>[[item]]</paper-item>
+      <paper-menu on-iron-activate="_onListItemSelected" >
+        <template is="dom-repeat" items="[[_computeView(history, autocomplete, fallbackSet)]]" filter="[[filter(searchValue, autocomplete, autocompleteFallback, fallbackSet)]]">
+          <paper-item name="[[_computeItemName(item)]]">
+            <template is="dom-if" if="[[!autocomplete]]">
+              <iron-icon icon="ps-icons:history"></iron-icon>
+            </template>
+            <template is="dom-if" if="[[autocomplete]]">
+              <iron-icon src="[[item.image]]"></iron-icon>
+            </template>
+            [[_computeItemName(item)]]</paper-item>
         </template>
       </paper-menu>
     </paper-material>
@@ -63,6 +69,16 @@
           type: Boolean,
           reflectToAttribute: true,
           value: false
+        },
+
+        /**
+         * A set containing items for using with autocompleteFallback
+         */
+        fallbackSet: {
+          type: Array,
+          value: function() {
+            return [];
+          }
         },
 
         /** The positon for the menu to show */
@@ -104,6 +120,17 @@
         return this.host.getBoundingClientRect();
       },
 
+      _computeItemName: function(item) {
+        if (item.name) {
+          return item.name;
+        }
+        return item;
+      },
+
+      _onListItemSelected: function (e) {
+        this.fire('list-item-select', e.detail.item.name);
+      },
+
       _onIronResize: function() {
         this.style.width = this.boundedClient.width + 'px';
         if (this.verticalAlign === 'top') {
@@ -113,34 +140,47 @@
         }
       },
 
-      _computeView: function(history, autocomplete) {
+      _computeView: function(history, autocomplete, fallbackSet) {
         if (history && !autocomplete) {
           return history;
-        } else if (history && autocomplete && this.autocompleteFallback) {
-          return history;
+        } else if (fallbackSet && autocomplete && this.autocompleteFallback) {
+          return fallbackSet;
         } else if (history && autocomplete && !this.autocompleteFallback) {
           return [];
         }
       },
 
       open: function() {
+        if (this.host.value) {
+          this.searchValue = this.value;
+          this.autocomplete = true;
+        }
         this._onIronResize();
         this.opened = true;
       },
 
       close: function() {
+        this.cancel();
+        this.autocomplete = false;
         this.opened = false;
       },
 
-      filter: function(searchValue, autocomplete, autocompleteFallback) {
+      cancel: function() {
+        this.autocomplete = false;
+      },
+
+      filter: function(searchValue, autocomplete, autocompleteFallback, fallbackSet) {
+
         if (searchValue !== null) {
           return function(item) {
             if (!item) {
               return false;
             }
-
             if (item && autocomplete && !autocompleteFallback) {
               return false;
+            }
+            if (item && autocomplete && autocompleteFallback && fallbackSet) {
+              return item && ~item.name.toLowerCase().indexOf(searchValue.toLowerCase());
             }
             /*jslint bitwise: true */
             return item && ~item.toLowerCase().indexOf(searchValue.toLowerCase());
@@ -151,23 +191,22 @@
       _searchValueChanged: function(searchValue) {
         var menu = Polymer.dom(this.root).querySelector('paper-menu');
         this._children = menu.children[0].children;
-        if (searchValue) {
+        if (searchValue !== null && !this.opened) {
           this.async(function() {
             for (var i = 0; i < this._children.length; i++) {
               if (this._children[0].localName === 'paper-item') {
+                // this._children[i].classList.remove('transition');
                 this._children[i].classList.add('transition');
-                this.open();
                 this.autocomplete = true;
-              } else {
-                this.close();
+                this.open();
               }
             }
-          },10);
-        } else if (!searchValue) {
+          });
+        } else {
           for (var i = 0; i < this._children.length; i++) {
             if (this._children[0].localName === 'paper-item') {
-              this._children[i].classList.remove('transition');
-              this.autocomplete = false;
+              // this._children[i].classList.remove('transition');
+              this._children[i].classList.add('transition');
               this.open();
             }
           }

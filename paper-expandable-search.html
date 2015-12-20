@@ -120,7 +120,14 @@ Example:
     </div>
     <div id="dropShadow"></div>
 
-    <paper-search-list history="{{history}}" search-value="[[value]]" autocomplete$="[[autocomplete]]" vertical-align="[[verticalAlign]]" on-iron-select="_onListItemSelected" autocomplete-fallback></paper-search-list>
+    <paper-search-list history="{{history}}"
+      search-value="[[value]]"
+      fallback-set="[[fallbackSet]]"
+      autocomplete$="[[autocomplete]]"
+      vertical-align="[[verticalAlign]]"
+      on-list-item-select="_onListItemSelected"
+      autocomplete-fallback>
+    </paper-search-list>
 
     <iron-a11y-keys id="a11y" target="[[target]]" keys="enter" on-keys-pressed="onEnter"></iron-a11y-keys>
     <iframe id="remember" name="remember" hidden src="about:blank"></iframe>
@@ -205,6 +212,16 @@ Example:
          type: Array
        },
 
+       /**
+        * A set containing items for using with autocompleteFallback
+        */
+       fallbackSet: {
+         type: Array,
+         value: function() {
+           return [];
+         }
+       },
+
        opened: {
          type: Boolean,
          notify: true,
@@ -217,6 +234,16 @@ Example:
     },
 
     attached: function() {
+      if(!Array.prototype.contains) {
+        Array.prototype.contains = function(k) {
+          for(var i=0; i < this.length; i++){
+            if(this[i] === k){
+              return true;
+            }
+          }
+          return false;
+        }
+      }
       this._searchList = Polymer.dom(this.root).querySelector('paper-search-list');
       this._searchBar = Polymer.dom(this.root).querySelector('paper-search-bar');
       var distributedNodes = Polymer.dom(this.$.openBtn).getDistributedNodes();
@@ -228,7 +255,6 @@ Example:
     },
 
     _updateHistory: function(e) {
-      console.log(e);
       this.history = e.detail.history;
       this.autocomplete = e.detail.autocomplete;
     },
@@ -242,10 +268,6 @@ Example:
       } else if (this.customCancel && target.hasAttribute(this.cancelAttribute)) {
         this.cancel();
       }
-    },
-
-    _onListItemSelected: function(e) {
-      this.value = e.detail.item.name;
     },
 
     open: function() {
@@ -267,16 +289,27 @@ Example:
     },
 
     cancel: function() {
-      if (this._searchBar.value) {
-        this._searchBar.value = null;
+      if (this.value) {
+        this.value = null;
+        // this._searchBar.value = null;
       } else {
         this.close();
       }
     },
 
+    _onListItemSelected: function(e) {
+      this.value = e.detail;
+      this.fire('searched', this.value);
+      this.cancel();
+      this.close();
+    },
+
     onEnter: function() {
       this.querySelector('button').click();
       this.addToHistory(this.value);
+      this.fire('searched', this.value);
+      this.cancel();
+      this.close();
     },
 
     addToHistory:function(value) {
@@ -297,14 +330,15 @@ Example:
         }
         this.checkType(prop, Array).then(function(isArray) {
           if (isArray) {
-            [prop].forEach(function(value) {
-              if (value === val) {
+            this._propHasData(prop).then(function(hasData) {
+              if (hasData && prop.contains(val)) {
                 resolve(true);
+              } else {
+                resolve(false);
               }
-            }.bind(this));
-            resolve(false);
+            });
           }
-        });
+        }.bind(this));
       }.bind(this));
 
     },
@@ -318,10 +352,19 @@ Example:
           reject('no type defined');
         }
         if (prop.constructor === type) {
-          resolve(true);
+          return resolve(true);
         }
         resolve(false);
-      }.bind(this));
+      });
+    },
+
+    _propHasData: function(prop) {
+      return new Promise(function(resolve, reject) {
+        if (prop.length) {
+          return resolve(true);
+        }
+        resolve(false);
+      });
     }
   });
 

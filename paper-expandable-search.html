@@ -259,7 +259,7 @@ Example:
       this.autocomplete = e.detail.autocomplete;
     },
 
-    _tapHandler: function() {
+    _tapHandler: function(event) {
       var target = Polymer.dom(event).localTarget;
       if (target.hasAttribute(this.openAttribute)) {
         this.open();
